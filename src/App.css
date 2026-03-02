@@ -26,10 +26,31 @@ body {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 32px 40px;
   min-height: 100vh;
+}
+
+.tool-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Timestamp split layout */
+.ts-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+.ts-split-left,
+.ts-split-right {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%;
 }
 
 .back-link {
@@ -573,10 +594,19 @@ h1 {
   font-size: 13px;
 }
 
+/* Two column layout */
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
 .column-box {
   border: 2px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
+  width: 100%;
 }
 
 .column-header {
@@ -589,12 +619,13 @@ h1 {
 
 .column-content {
   padding: 16px;
-  min-height: 200px;
+  min-height: 350px;
+  width: 100%;
 }
 
 .column-content textarea {
   width: 100%;
-  height: 180px;
+  height: 320px;
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 12px;
