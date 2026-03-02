@@ -507,6 +507,10 @@ h1 {
   font-family: 'Consolas', monospace;
 }
 
+.ts-datetime-input {
+  cursor: pointer;
+}
+
 .ts-split-input:focus {
   outline: none;
   border-color: var(--primary);
