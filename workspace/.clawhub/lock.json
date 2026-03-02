@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "skills": {
+    "sonoscli": {
+      "version": "1.0.0",
+      "installedAt": 1771148368436
+    },
+    "tavily-search": {
+      "version": "1.0.0",
+      "installedAt": 1771151682766
+    },
+    "find-skills": {
+      "version": "0.1.0",
+      "installedAt": 1771151725770
+    },
+    "github-cli": {
+      "version": "1.0.0",
+      "installedAt": 1771995734021
+    }
+  }
+}
