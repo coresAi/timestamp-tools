@@ -3,75 +3,83 @@ import { useSearchParams } from 'react-router-dom'
 
 function TimestampTool() {
   const [searchParams] = useSearchParams()
-  const [currentTimestamp, setCurrentTimestamp] = useState(Math.floor(Date.now() / 1000))
-  const [inputValue, setInputValue] = useState('')
-  const [output, setOutput] = useState(null)
-  const [mode, setMode] = useState('timestampToDate')
+  
+  // 左侧：时间戳 → 日期
+  const [tsInput, setTsInput] = useState('')
+  const [tsResult, setTsResult] = useState(null)
+  
+  // 右侧：日期 → 时间戳
+  const [dateInput, setDateInput] = useState('')
+  const [dateResult, setDateResult] = useState(null)
+  
+  const [currentTimestamp, setCurrentTimestamp] = useState(Math.floor(Date.now()))
 
-  // 支持URL参数快速填入
+  // 支持URL参数快速填入（毫秒时间戳）
   useEffect(() => {
     const ts = searchParams.get('ts')
     if (ts) {
-      setInputValue(ts)
-    }
-    const date = searchParams.get('date')
-    if (date) {
-      setInputValue(date)
-      setMode('dateToTimestamp')
+      setTsInput(ts)
     }
   }, [searchParams])
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTimestamp(Math.floor(Date.now() / 1000))
+      setCurrentTimestamp(Math.floor(Date.now()))
     }, 1000)
     return () => clearInterval(interval)
   }, [])
 
-  const convert = () => {
-    if (mode === 'timestampToDate') {
-      let ts = parseInt(inputValue)
-      if (isNaN(ts)) {
-        setOutput({ error: '请输入有效的数字' })
-        return
-      }
-      if (ts > 9999999999) {
-        ts = Math.floor(ts / 1000)
-      }
-      
-      const date = new Date(ts * 1000)
-      setOutput({
-        date: date.toLocaleString('zh-CN'),
-        iso: date.toISOString(),
-        relative: date.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'full' }),
-        unix: ts,
-        utc: date.toUTCString(),
-        cn: date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
-      })
-    } else {
-      const date = new Date(inputValue)
-      if (isNaN(date.getTime())) {
-        setOutput({ error: '请输入有效的日期格式，如: 2024-01-01 或 2024-01-01 12:00:00' })
-        return
-      }
-      setOutput({
-        unix: Math.floor(date.getTime() / 1000),
-        unixMs: date.getTime(),
-        iso: date.toISOString()
-      })
+  // 时间戳 → 日期
+  const convertTsToDate = () => {
+    let ts = parseInt(tsInput)
+    if (isNaN(ts)) {
+      setTsResult({ error: '请输入有效的数字' })
+      return
     }
+    // 统一按毫秒处理
+    if (ts < 10000000000) {
+      ts = ts * 1000
+    }
+    
+    const date = new Date(ts)
+    if (isNaN(date.getTime())) {
+      setTsResult({ error: '无效的时间戳' })
+      return
+    }
+    
+    setTsResult({
+      local: date.toLocaleString('zh-CN'),
+      beijing: date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
+      utc: date.toUTCString(),
+      unix: Math.floor(ts / 1000),
+      unixMs: ts
+    })
   }
+
+  // 日期 → 时间戳
+  const convertDateToTs = () => {
+    const date = new Date(dateInput)
+    if (isNaN(date.getTime())) {
+      setDateResult({ error: '请输入有效的日期格式' })
+      return
+    }
+    setDateResult({
+      unix: Math.floor(date.getTime() / 1000),
+      unixMs: date.getTime(),
+      iso: date.toISOString()
+    })
+  }
+
+  // 自动转换
+  useEffect(() => {
+    if (tsInput) {
+      convertTsToDate()
+    }
+  }, [tsInput])
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(String(text))
   }
-
-  // 自动转换（当URL有参数时）
-  useEffect(() => {
-    if (inputValue) {
-      convert()
-    }
-  }, [inputValue, mode])
 
   return (
     <div className="container">
@@ -83,98 +91,96 @@ function TimestampTool() {
         </div>
         
         <div className="current-time-box">
-          <span className="label">当前时间戳：</span>
+          <span className="label">当前时间戳（毫秒）：</span>
           <span className="value">{currentTimestamp}</span>
           <button className="copy-btn" onClick={() => copyToClipboard(currentTimestamp)}>复制</button>
         </div>
 
         <div className="tool-content">
-          <div className="tabs">
-            <button 
-              className={mode === 'timestampToDate' ? 'active' : ''} 
-              onClick={() => { setMode('timestampToDate'); setInputValue(''); setOutput(null); }}
-            >
-              时间戳 → 日期
-            </button>
-            <button 
-              className={mode === 'dateToTimestamp' ? 'active' : ''} 
-              onClick={() => { setMode('dateToTimestamp'); setInputValue(''); setOutput(null); }}
-            >
-              日期 → 时间戳
-            </button>
-          </div>
-
-          <div className="two-column">
-            <div className="column-box">
-              <div className="column-header">{mode === 'timestampToDate' ? '输入时间戳' : '输入日期时间'}</div>
-              <div className="column-content">
-                <textarea
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={mode === 'timestampToDate' ? '例如：1704067200 或 1704067200000' : '例如：2024-01-01 12:00:00'}
+          <div className="ts-split-layout">
+            {/* 左侧：时间戳 → 日期 */}
+            <div className="ts-split-left">
+              <div className="ts-split-title">时间戳 → 日期</div>
+              <div className="ts-split-input-wrap">
+                <input
+                  type="text"
+                  value={tsInput}
+                  onChange={(e) => setTsInput(e.target.value)}
+                  placeholder="输入毫秒时间戳，如：1698765432000"
+                  className="ts-split-input"
                 />
-                <div className="quick-buttons" style={{ marginTop: '12px' }}>
-                  <button onClick={() => { setInputValue(String(Math.floor(Date.now() / 1000))); setMode('timestampToDate'); }}>
-                    当前时间戳
-                  </button>
-                  <button onClick={() => { setInputValue(new Date().toLocaleString('zh-CN')); setMode('dateToTimestamp'); }}>
-                    当前日期时间
-                  </button>
-                </div>
+                <button className="ts-split-btn" onClick={() => setTsInput(String(currentTimestamp))}>当前时间</button>
+              </div>
+              <div className="ts-split-result">
+                {tsResult && (
+                  <>
+                    {tsResult.error ? (
+                      <div className="ts-error">{tsResult.error}</div>
+                    ) : (
+                      <>
+                        <div className="ts-result-item">
+                          <span>本地时间</span>
+                          <code>{tsResult.local}</code>
+                          <button onClick={() => copyToClipboard(tsResult.local)}>复制</button>
+                        </div>
+                        <div className="ts-result-item">
+                          <span>北京时间</span>
+                          <code>{tsResult.beijing}</code>
+                          <button onClick={() => copyToClipboard(tsResult.beijing)}>复制</button>
+                        </div>
+                        <div className="ts-result-item">
+                          <span>UTC 时间</span>
+                          <code>{tsResult.utc}</code>
+                          <button onClick={() => copyToClipboard(tsResult.utc)}>复制</button>
+                        </div>
+                        <div className="ts-result-item">
+                          <span>Unix 时间戳</span>
+                          <code>{tsResult.unix}</code>
+                          <button onClick={() => copyToClipboard(tsResult.unix)}>复制</button>
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
-            <div className="column-box">
-              <div className="column-header">转换结果</div>
-              <div className="column-content result-column">
-                {output && (
+            {/* 右侧：日期 → 时间戳 */}
+            <div className="ts-split-right">
+              <div className="ts-split-title">日期 → 时间戳</div>
+              <div className="ts-split-input-wrap">
+                <input
+                  type="text"
+                  value={dateInput}
+                  onChange={(e) => setDateInput(e.target.value)}
+                  placeholder="输入日期，如：2024-01-01 12:00:00"
+                  className="ts-split-input"
+                />
+                <button className="ts-split-btn" onClick={() => setDateInput(new Date().toLocaleString('zh-CN'))}>当前时间</button>
+              </div>
+              <div className="ts-split-result">
+                <button className="ts-convert-btn" onClick={convertDateToTs}>转换</button>
+                {dateResult && (
                   <>
-                    {output.error ? (
-                      <div className="error">{output.error}</div>
+                    {dateResult.error ? (
+                      <div className="ts-error">{dateResult.error}</div>
                     ) : (
                       <>
-                        {output.date && (
-                          <div className="result-item">
-                            <span>本地时间</span>
-                            <code>{output.date}</code>
-                            <button className="copy-btn" onClick={() => copyToClipboard(output.date)}>复制</button>
-                          </div>
-                        )}
-                        {output.cn && (
-                          <div className="result-item">
-                            <span>格式化</span>
-                            <code>{output.cn}</code>
-                            <button className="copy-btn" onClick={() => copyToClipboard(output.cn)}>复制</button>
-                          </div>
-                        )}
-                        {output.iso && (
-                          <div className="result-item">
-                            <span>ISO 格式</span>
-                            <code>{output.iso}</code>
-                            <button className="copy-btn" onClick={() => copyToClipboard(output.iso)}>复制</button>
-                          </div>
-                        )}
-                        {output.unix !== undefined && (
-                          <div className="result-item">
-                            <span>Unix 时间戳（秒）</span>
-                            <code>{output.unix}</code>
-                            <button className="copy-btn" onClick={() => copyToClipboard(output.unix)}>复制</button>
-                          </div>
-                        )}
-                        {output.unixMs && (
-                          <div className="result-item">
-                            <span>Unix 时间戳（毫秒）</span>
-                            <code>{output.unixMs}</code>
-                            <button className="copy-btn" onClick={() => copyToClipboard(output.unixMs)}>复制</button>
-                          </div>
-                        )}
-                        {output.utc && (
-                          <div className="result-item">
-                            <span>UTC 时间</span>
-                            <code>{output.utc}</code>
-                            <button className="copy-btn" onClick={() => copyToClipboard(output.utc)}>复制</button>
-                          </div>
-                        )}
+                        <div className="ts-result-item">
+                          <span>Unix 时间戳（秒）</span>
+                          <code>{dateResult.unix}</code>
+                          <button onClick={() => copyToClipboard(dateResult.unix)}>复制</button>
+                        </div>
+                        <div className="ts-result-item">
+                          <span>Unix 时间戳（毫秒）</span>
+                          <code>{dateResult.unixMs}</code>
+                          <button onClick={() => copyToClipboard(dateResult.unixMs)}>复制</button>
+                        </div>
+                        <div className="ts-result-item">
+                          <span>ISO8601</span>
+                          <code>{dateResult.iso}</code>
+                          <button onClick={() => copyToClipboard(dateResult.iso)}>复制</button>
+                        </div>
                       </>
                     )}
                   </>

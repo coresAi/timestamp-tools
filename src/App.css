@@ -450,11 +450,127 @@ h1 {
   cursor: pointer;
 }
 
-/* Two column layout */
-.two-column {
+/* Timestamp split layout */
+.ts-split-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+}
+
+.ts-split-left,
+.ts-split-right {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.ts-split-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.ts-split-input-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ts-split-input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Consolas', monospace;
+}
+
+.ts-split-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.ts-split-btn {
+  padding: 12px 16px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ts-split-btn:hover {
+  background: var(--primary-hover);
+}
+
+.ts-split-result {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.ts-convert-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ts-convert-btn:hover {
+  background: var(--primary-hover);
+}
+
+.ts-result-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+  gap: 12px;
+}
+
+.ts-result-item:last-child {
+  border-bottom: none;
+}
+
+.ts-result-item span {
+  min-width: 120px;
+  font-size: 13px;
+  color: #666;
+}
+
+.ts-result-item code {
+  flex: 1;
+  font-family: 'Consolas', monospace;
+  font-size: 13px;
+}
+
+.ts-result-item button {
+  padding: 4px 10px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ts-result-item button:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.ts-error {
+  padding: 16px;
+  color: var(--error);
+  font-size: 13px;
 }
 
 .column-box {
